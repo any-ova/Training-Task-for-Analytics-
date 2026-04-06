@@ -1,0 +1,201 @@
+---
+openapi: "3.0.0"
+info:
+  title: "Book Store API"
+  version: "1.0.0"
+paths:
+  /api/v1/users/register:
+    post:
+      summary: "Register a new user"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: "object"
+              required:
+              - "firstName"
+              - "lastName"
+              - "username"
+              - "password"
+              - "recaptchaToken"
+              properties:
+                firstName:
+                  type: "string"
+                  example: "ivan"
+                lastName:
+                  type: "string"
+                  example: "ivanov"
+                username:
+                  type: "string"
+                  example: "ivan"
+                password:
+                  type: "string"
+                  example: "**********"
+                recaptchaToken:
+                  type: "string"
+                  example: "03AGdBq24PBCb..."
+      responses:
+        "200":
+          description: "Successful registration"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  status:
+                    type: "string"
+                    example: "success"
+                  message:
+                    type: "string"
+                    example: "User Register Successfully"
+                  userId:
+                    type: "integer"
+                    example: 1054
+
+        "400":
+          description: "Bad Request - Password validation failed"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PasswordValidationErrorResponse"
+
+        "403":
+          description: "Forbidden - reCAPTCHA verification failed"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CaptchaErrorResponse"
+
+        "409":
+          description: "Conflict - User already exists"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserExistsErrorResponse"
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalErrorResponse"
+components:
+  schemas:
+    RegisterRequest:
+      type: "object"
+      required:
+      - "firstName"
+      - "lastName"
+      - "username"
+      - "password"
+      - "recaptchaToken"
+      properties:
+        firstName:
+          type: "string"
+          minLength: 1
+          maxLength: 100
+          example: "ivan"
+        lastName:
+          type: "string"
+          minLength: 1
+          maxLength: 100
+          example: "ivanov"
+        username:
+          type: "string"
+          minLength: 3
+          maxLength: 50
+          pattern: "^[a-zA-Z0-9_]+$"
+          example: "ivan"
+        password:
+          type: "string"
+          minLength: 8
+          maxLength: 128
+          example: "SecureP@ss123!"
+          description: "Password requirements:\n- At least 8 characters long\n- At\
+            \ least one uppercase letter (A-Z)\n- At least one lowercase letter (a-z)\n\
+            - At least one digit (0-9)\n- At least one special character\n- At least\
+            \ one non-alphanumeric character\n"
+        recaptchaToken:
+          type: "string"
+          description: "reCAPTCHA verification token"
+          example: "03AGdBq24PBCb..."
+    CaptchaErrorResponse:
+      type: "object"
+      required:
+      - "status"
+      - "message"
+      properties:
+        status:
+          type: "string"
+          enum:
+          - "error"
+          example: "error"
+        message:
+          type: "string"
+          example: "Please verify reCaptcha to register!"
+        code:
+          type: "integer"
+          example: 403
+    PasswordValidationErrorResponse:
+      type: "object"
+      required:
+      - "status"
+      - "message"
+      properties:
+        status:
+          type: "string"
+          enum:
+          - "error"
+          example: "error"
+        message:
+          type: "string"
+          example: "Passwords must have at least one non alphanumeric character, one\
+            \ digit (0-9), one uppercase (A-Z), one lowercase (a-z), one special character\
+            \ and Password must be eight characters or longer."
+        errors:
+          type: "array"
+          description: "Specific password validation errors"
+          items:
+            type: "string"
+          example:
+          - "Password must be at least 8 characters long"
+          - "Password must contain at least one uppercase letter (A-Z)"
+          - "Password must contain at least one digit (0-9)"
+          - "Password must contain at least one special character"
+        code:
+          type: "integer"
+          example: 400
+    UserExistsErrorResponse:
+      type: "object"
+      required:
+      - "status"
+      - "message"
+      properties:
+        status:
+          type: "string"
+          enum:
+          - "error"
+          example: "error"
+        message:
+          type: "string"
+          example: "User exist"
+        code:
+          type: "integer"
+          example: 409
+    InternalErrorResponse:
+      type: "object"
+      required:
+      - "status"
+      - "message"
+      properties:
+        status:
+          type: "string"
+          enum:
+          - "error"
+          example: "error"
+        message:
+          type: "string"
+          example: "Internal Server Error"
+        code:
+          type: "integer"
+          example: 500
